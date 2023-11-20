@@ -3,12 +3,16 @@ from flask_pymongo import PyMongo
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 
+from configs import config_data
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 CORS(app)
 # MongoDB configuration
-app.config['MONGO_URI'] = 'mongodb+srv://root-user:rootuser1710@loggerinstance.o4rqneo.mongodb.net/logger_db?retryWrites=true&w=majority'
+user = config_data['user']
+password = config_data['password']
+database = config_data['database']
+app.config['MONGO_URI'] = f'mongodb+srv://{user}:{password}@loggerinstance.o4rqneo.mongodb.net/{database}?retryWrites=true&w=majority'
 mongo = PyMongo(app)
 
 logs_collection = mongo.db.logs
