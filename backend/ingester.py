@@ -5,7 +5,8 @@ from flask_cors import CORS
 from configs import config_data
 
 app = Flask(__name__)
-# CORS(app)
+CORS(app)
+
 # MongoDB configuration
 user = config_data['user']
 password = config_data['password']

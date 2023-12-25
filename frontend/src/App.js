@@ -1,95 +1,51 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import socketIOClient from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
 
-import './index.css'; // Import your CSS file
+function YourComponent() {
+  const [data, setData] = useState(null);
 
-const socket = socketIOClient('http://127.0.0.1:3000');
+  useEffect(() => {
+    // Fetch data when the component mounts
+    fetchData();
+  }, []);
 
-const QueryPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    level: '',
-    message: '',
-    resourceId: '',
-    timestamp: '',
-    traceId: '',
-    spanId: '',
-    commit: '',
-    parentResourceId: '',
-  });
-  const [searchResults, setSearchResults] = useState([]);
-
-  const handleSearch = () => {
-    // Construct the API request URL based on the entered filters and search term
-    const apiUrl = `/logs?${constructQueryParams()}`;
-
-    // Make the API request
-    axios.get(apiUrl)
-      .then((response) => {
-        setSearchResults(response.data.logs);
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  };
-
-  const constructQueryParams = () => {
-    const queryParams = [];
-
-    // Add non-empty filters to the query parameters
-    Object.keys(filters).forEach((key) => {
-      if (filters[key]) {
-        queryParams.push(`${key}=${encodeURIComponent(filters[key])}`);
-      }
-    });
-
-    // Add the search term to the query parameters
-    if (searchTerm) {
-      queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+  const fetchData = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:3000/logs');
+      const jsonData = await response.json();
+      setData(jsonData);
+      console.log('Updated State:', jsonData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
-
-    return queryParams.join('&');
   };
+
+  console.log('Current State:', data);
 
   return (
-    <div className="query-container">
-      <h1>Log Query Interface</h1>
-
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button onClick={handleSearch}>Search</button>
-      </div>
-
-      <div className="filter-container">
-        <label>Level:</label>
-        <input
-          type="text"
-          value={filters.level}
-          onChange={(e) => setFilters({ ...filters, level: e.target.value })}
-        />
-        {/* Add similar input fields for other filters (message, resourceId, timestamp, traceId, spanId, commit, parentResourceId) */}
-      </div>
-
-      <div className="results-container">
-        <h2>Search Results</h2>
-        <ul>
-          {searchResults.map((log, index) => (
-            <li key={index}>
-              <p>Level: {log.level}</p>
-              <p>Message: {log.message}</p>
-              {/* Display other log attributes */}
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div>
+      {data !== null ? (
+        Array.isArray(data.logs) ? (
+          // Render your array of data here
+          data.logs.map(item => (
+            <div key={item.id}>
+              <h4>{item.commit}</h4>
+              <h4>{item.level}</h4>
+              <h4>{item.message}</h4>
+            </div>
+          ))
+        ) : (
+          // Render single object
+          <div>
+            <h4>{data.logs.commit}</h4>
+            <h4>{data.logs.level}</h4>
+            <h4>{data.logs.message}</h4>
+          </div>
+        )
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
-};
+}
 
-export default QueryPage;
+export default YourComponent;
